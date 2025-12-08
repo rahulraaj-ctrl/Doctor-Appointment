@@ -11,7 +11,7 @@ const AppointmentTimelineItem = ({ appointment, token, onReview, isLast }) => {
   const submitReview = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`https://doctor-appointment-oc3s.onrender.com/api/appointments/${appointment._id}/review`, {
+      await axios.post(`http://localhost:5000/api/appointments/${appointment._id}/review`, {
         rating,
         review
       }, {
@@ -184,7 +184,7 @@ const PatientDashboard = ({ token }) => {
 
   const fetchAppointments = async () => {
     try {
-      const res = await axios.get('https://doctor-appointment-oc3s.onrender.com/api/appointments', {
+      const res = await axios.get('http://localhost:5000/api/appointments', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAppointments(res.data);
@@ -195,7 +195,7 @@ const PatientDashboard = ({ token }) => {
 
   const fetchDoctors = async () => {
     try {
-      const res = await axios.get('https://doctor-appointment-oc3s.onrender.com/api/appointments/doctors', {
+      const res = await axios.get('http://localhost:5000/api/appointments/doctors', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDoctors(res.data);
@@ -214,7 +214,7 @@ const PatientDashboard = ({ token }) => {
     const dateString = selectedDate.toISOString().split('T')[0]; // Convert to YYYY-MM-DD format
 
     try {
-      await axios.post('https://doctor-appointment-oc3s.onrender.com/api/appointments/book', {
+      await axios.post('http://localhost:5000/api/appointments/book', {
         doctorId: selectedDoctor,
         date: dateString,
         time,
