@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Register = ({ setToken }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -105,11 +107,12 @@ const Register = ({ setToken }) => {
         ...(formData.role === 'doctor' && { specialization: formData.specialization.trim() })
       };
 
-      const res = await axios.post('http://localhost:5000/api/auth/register', submitData);
+      const res = await axios.post('https://doctor-appointment-oc3s.onrender.com/api/auth/register', submitData);
 
       setToken(res.data.token);
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
+      navigate('/');
     } catch (err) {
       console.error('Registration error:', err);
 

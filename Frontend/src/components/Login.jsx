@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Login = ({ setToken }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -63,7 +65,7 @@ const Login = ({ setToken }) => {
     setIsLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', {
+      const res = await axios.post('https://doctor-appointment-oc3s.onrender.com/api/auth/login', {
         email: formData.email.trim(),
         password: formData.password
       });
@@ -71,6 +73,7 @@ const Login = ({ setToken }) => {
       setToken(res.data.token);
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
+      navigate('/');
     } catch (err) {
       console.error('Login error:', err);
 
