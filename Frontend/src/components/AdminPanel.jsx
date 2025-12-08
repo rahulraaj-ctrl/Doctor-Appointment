@@ -160,7 +160,7 @@ const AdminPanel = ({ token }) => {
 
   const fetchDoctors = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/admin/doctors', {
+      const res = await axios.get('https://doctor-appointment-oc3s.onrender.com/api/admin/doctors', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDoctors(res.data);
@@ -171,7 +171,7 @@ const AdminPanel = ({ token }) => {
 
   const fetchAnalytics = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/admin/analytics', {
+      const res = await axios.get('https://doctor-appointment-oc3s.onrender.com/api/admin/analytics', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAnalytics(res.data);
@@ -183,7 +183,7 @@ const AdminPanel = ({ token }) => {
   const addDoctor = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/admin/doctors', {
+      await axios.post('https://doctor-appointment-oc3s.onrender.com/api/admin/doctors', {
         name,
         email,
         password,
@@ -203,7 +203,7 @@ const AdminPanel = ({ token }) => {
 
   const deleteDoctor = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/admin/doctors/${id}`, {
+      await axios.delete(`https://doctor-appointment-oc3s.onrender.com/api/admin/doctors/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchDoctors();

@@ -12,7 +12,7 @@ const DoctorDashboard = ({ token }) => {
 
   const fetchAppointments = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/appointments', {
+      const res = await axios.get('https://doctor-appointment-oc3s.onrender.com/api/appointments', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAppointments(res.data);
@@ -23,7 +23,7 @@ const DoctorDashboard = ({ token }) => {
 
   const updateStatus = async (id, status) => {
     try {
-      await axios.put(`http://localhost:5000/api/appointments/${id}/status`, { status }, {
+      await axios.put(`https://doctor-appointment-oc3s.onrender.com/api/appointments/${id}/status`, { status }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchAppointments();
