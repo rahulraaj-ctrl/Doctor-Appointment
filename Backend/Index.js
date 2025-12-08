@@ -13,7 +13,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://vermaraj961694_db_user:<db_password>@cluster0.9eqpv70.mongodb.net/')
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('MongoDB connected');
     createAdminUser(); // Call to create admin automatically
