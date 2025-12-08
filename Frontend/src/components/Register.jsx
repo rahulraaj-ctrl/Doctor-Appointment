@@ -107,7 +107,7 @@ const Register = ({ setToken }) => {
         ...(formData.role === 'doctor' && { specialization: formData.specialization.trim() })
       };
 
-      const res = await axios.post('https://doctor-appointment-oc3s.onrender.com/api/auth/register', submitData);
+      const res = await axios.post('http://localhost:5000/api/auth/register', submitData);
 
       setToken(res.data.token);
       localStorage.setItem('token', res.data.token);
