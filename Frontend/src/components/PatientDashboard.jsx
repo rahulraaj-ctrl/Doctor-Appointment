@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import API_URL from '../config';
 
 const convertTo12Hour = (time24) => {
   if (!time24) return '';
@@ -20,7 +21,7 @@ const AppointmentTimelineItem = ({ appointment, token, onReview, isLast }) => {
   const submitReview = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`http://localhost:5000/api/appointments/${appointment._id}/review`, {
+      await axios.post(`${API_URL}/api/appointments/${appointment._id}/review`, {
         rating,
         review
       }, {
@@ -193,7 +194,7 @@ const PatientDashboard = ({ token }) => {
 
   const fetchAppointments = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/appointments', {
+      const res = await axios.get(`${API_URL}/api/appointments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAppointments(res.data);
@@ -204,7 +205,7 @@ const PatientDashboard = ({ token }) => {
 
   const fetchDoctors = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/appointments/doctors', {
+      const res = await axios.get(`${API_URL}/api/appointments/doctors`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDoctors(res.data);
@@ -223,7 +224,7 @@ const PatientDashboard = ({ token }) => {
     const dateString = selectedDate.toISOString().split('T')[0]; // Convert to YYYY-MM-DD format
 
     try {
-      await axios.post('http://localhost:5000/api/appointments/book', {
+      await axios.post(`${API_URL}/api/appointments/book`, {
         doctorId: selectedDoctor,
         date: dateString,
         time,

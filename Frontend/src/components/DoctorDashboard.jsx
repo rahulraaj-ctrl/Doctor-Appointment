@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_URL from '../config';
 
 const convertTo12Hour = (time24) => {
   if (!time24) return '';
@@ -24,7 +25,7 @@ const DoctorDashboard = ({ token }) => {
 
   const fetchDoctor = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/profile', {
+      const res = await axios.get(`${API_URL}/api/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDoctor(res.data);
@@ -36,7 +37,7 @@ const DoctorDashboard = ({ token }) => {
 
   const fetchAppointments = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/appointments', {
+      const res = await axios.get(`${API_URL}/api/appointments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAppointments(res.data);
@@ -47,7 +48,7 @@ const DoctorDashboard = ({ token }) => {
 
   const updateStatus = async (id, status) => {
     try {
-      await axios.put(`http://localhost:5000/api/appointments/${id}/status`, { status }, {
+      await axios.put(`${API_URL}/api/appointments/${id}/status`, { status }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setErrorMessage('');

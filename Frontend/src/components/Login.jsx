@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_URL from '../config';
 
 const Login = ({ setToken }) => {
   const navigate = useNavigate();
@@ -65,7 +66,7 @@ const Login = ({ setToken }) => {
     setIsLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', {
+      const res = await axios.post(`${API_URL}/api/auth/login`, {
         email: formData.email.trim(),
         password: formData.password
       });
