@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   role: { type: String, enum: ['patient', 'doctor', 'admin'], default: 'patient' },
   specialization: { type: String }, // for doctors
+  isApproved: { type: Boolean, default: false }, // doctors need approval, patients are auto-approved
   createdAt: { type: Date, default: Date.now }
 });
 

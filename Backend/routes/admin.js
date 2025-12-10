@@ -28,10 +28,54 @@ router.post('/doctors', auth, async (req, res) => {
     if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const doctor = new User({ name, email, password: hashedPassword, role: 'doctor', specialization });
+    const doctor = new User({ name, email, password: hashedPassword, role: 'doctor', specialization, isApproved: false });
     await doctor.save();
     res.json(doctor);
   } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Approve/Reject doctor
+router.put('/doctors/:id/approve', auth, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Access denied' });
+
+  const { isApproved } = req.body;
+  try {
+    const doctor = await User.findById(req.params.id);
+    if (!doctor || doctor.role !== 'doctor') return res.status(400).json({ message: 'Doctor not found' });
+
+    doctor.isApproved = isApproved;
+    await doctor.save();
+    
+    res.json({ message: isApproved ? 'Doctor approved' : 'Doctor rejected', doctor });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Get dashboard analytics
+router.get('/analytics', auth, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ message: 'Access denied' });
+
+  try {
+    const doctor = await User.findById(req.params.id);
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+    
+    if (doctor.role !== 'doctor') {
+      return res.status(400).json({ message: 'User is not a doctor' });
+    }
+    
+    // Delete all appointments for this doctor
+    await Appointment.deleteMany({ doctor: req.params.id });
+    
+    // Delete the doctor
+    await doctor.deleteOne();
+    res.json({ message: 'Doctor deleted successfully' });
+  } catch (err) {
+    console.error('Delete error:', err.message);
     res.status(500).json({ message: err.message });
   }
 });

@@ -61,6 +61,10 @@ router.get('/', auth, async (req, res) => {
 router.put('/:id/status', auth, async (req, res) => {
   if (req.user.role !== 'doctor') return res.status(403).json({ message: 'Only doctors can update appointments' });
 
+  // Check if doctor is approved
+  const doctor = await User.findById(req.user.id);
+  if (!doctor.isApproved) return res.status(403).json({ message: 'Your account is not yet approved by admin' });
+
   const { status } = req.body;
   if (!['approved', 'rejected', 'completed'].includes(status)) return res.status(400).json({ message: 'Invalid status' });
 

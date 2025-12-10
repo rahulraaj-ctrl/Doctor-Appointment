@@ -1,18 +1,42 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const convertTo12Hour = (time24) => {
+  if (!time24) return '';
+  const [hours, minutes] = time24.split(':');
+  let hour = parseInt(hours);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  hour = hour % 12 || 12;
+  return `${hour}:${minutes} ${ampm}`;
+};
+
 const DoctorDashboard = ({ token }) => {
   const [appointments, setAppointments] = useState([]);
+  const [doctor, setDoctor] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (token) {
+      fetchDoctor();
       fetchAppointments();
     }
   }, [token]);
 
+  const fetchDoctor = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/profile', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDoctor(res.data);
+    } catch (err) {
+      // Profile endpoint might not exist, that's okay
+      console.log('Profile endpoint not available');
+    }
+  };
+
   const fetchAppointments = async () => {
     try {
-      const res = await axios.get('https://doctor-appointment-oc3s.onrender.com/api/appointments', {
+      const res = await axios.get('http://localhost:5000/api/appointments', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAppointments(res.data);
@@ -23,12 +47,15 @@ const DoctorDashboard = ({ token }) => {
 
   const updateStatus = async (id, status) => {
     try {
-      await axios.put(`https://doctor-appointment-oc3s.onrender.com/api/appointments/${id}/status`, { status }, {
+      await axios.put(`http://localhost:5000/api/appointments/${id}/status`, { status }, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      setErrorMessage('');
       fetchAppointments();
     } catch (err) {
-      alert('Update failed');
+      const msg = err.response?.data?.message || 'Update failed';
+      setErrorMessage(msg);
+      setTimeout(() => setErrorMessage(''), 3000);
     }
   };
 
@@ -36,6 +63,31 @@ const DoctorDashboard = ({ token }) => {
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-6">
       <div className="container mx-auto max-w-4xl">
         <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">Doctor Dashboard</h1>
+
+        {errorMessage && (
+          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-400 rounded-lg">
+            <div className="flex items-center">
+              <svg className="w-6 h-6 text-red-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <p className="text-red-700 font-semibold">{errorMessage}</p>
+            </div>
+          </div>
+        )}
+
+        {doctor && !doctor.isApproved && (
+          <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
+            <div className="flex items-start">
+              <svg className="w-6 h-6 text-yellow-600 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <div>
+                <p className="text-yellow-700 font-semibold">Account Pending Approval</p>
+                <p className="text-yellow-600 text-sm">Your account is awaiting admin approval. You will be able to accept appointments once approved.</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white p-8 rounded-xl shadow-lg">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
@@ -57,7 +109,7 @@ const DoctorDashboard = ({ token }) => {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
                         <p><strong>Email:</strong> {app.patient.email}</p>
                         <p><strong>Date:</strong> {new Date(app.date).toLocaleDateString()}</p>
-                        <p><strong>Time:</strong> {app.time}</p>
+                        <p><strong>Time:</strong> {convertTo12Hour(app.time)}</p>
                       </div>
                       {app.reason && (
                         <p className="text-sm text-gray-600 mt-2"><strong>Reason:</strong> {app.reason}</p>
@@ -89,7 +141,7 @@ const DoctorDashboard = ({ token }) => {
                     </div>
                   )}
 
-                  {app.status === 'approved' && new Date(app.date) < new Date() && (
+                  {app.status === 'approved' && (
                     <div className="mt-4">
                       <button
                         onClick={() => updateStatus(app._id, 'completed')}

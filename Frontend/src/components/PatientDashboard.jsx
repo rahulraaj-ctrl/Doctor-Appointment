@@ -3,6 +3,15 @@ import axios from 'axios';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
+const convertTo12Hour = (time24) => {
+  if (!time24) return '';
+  const [hours, minutes] = time24.split(':');
+  let hour = parseInt(hours);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  hour = hour % 12 || 12;
+  return `${hour}:${minutes} ${ampm}`;
+};
+
 const AppointmentTimelineItem = ({ appointment, token, onReview, isLast }) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [rating, setRating] = useState(5);
@@ -11,7 +20,7 @@ const AppointmentTimelineItem = ({ appointment, token, onReview, isLast }) => {
   const submitReview = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`https://doctor-appointment-oc3s.onrender.com/api/appointments/${appointment._id}/review`, {
+      await axios.post(`http://localhost:5000/api/appointments/${appointment._id}/review`, {
         rating,
         review
       }, {
@@ -65,7 +74,7 @@ const AppointmentTimelineItem = ({ appointment, token, onReview, isLast }) => {
             <div>
               <div className="flex items-center mb-2">
                 <span className="text-2xl mr-2">{getStatusIcon(appointment.status)}</span>
-                <h3 className="font-semibold text-lg text-gray-800">{appointment.doctor.name}</h3>
+                <h3 className="font-semibold text-lg text-gray-800">{appointment.doctor?.name || 'Doctor (Deleted)'}</h3>
                 <span className={`ml-3 px-3 py-1 rounded-full text-xs font-semibold ${
                   appointment.status === 'approved' ? 'bg-green-100 text-green-800' :
                   appointment.status === 'rejected' ? 'bg-red-100 text-red-800' :
@@ -75,9 +84,9 @@ const AppointmentTimelineItem = ({ appointment, token, onReview, isLast }) => {
                   {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                 </span>
               </div>
-              <p className="text-sm text-gray-600 mb-1"><strong>Specialization:</strong> {appointment.doctor.specialization}</p>
+              <p className="text-sm text-gray-600 mb-1"><strong>Specialization:</strong> {appointment.doctor?.specialization || 'N/A'}</p>
               <p className="text-sm text-gray-600 mb-1"><strong>Date:</strong> {new Date(appointment.date).toLocaleDateString()}</p>
-              <p className="text-sm text-gray-600 mb-1"><strong>Time:</strong> {appointment.time}</p>
+              <p className="text-sm text-gray-600 mb-1"><strong>Time:</strong> {convertTo12Hour(appointment.time)}</p>
               <p className="text-sm text-gray-500"><strong>Booked on:</strong> {new Date(appointment.createdAt).toLocaleDateString()}</p>
             </div>
           </div>
@@ -184,7 +193,7 @@ const PatientDashboard = ({ token }) => {
 
   const fetchAppointments = async () => {
     try {
-      const res = await axios.get('https://doctor-appointment-oc3s.onrender.com/api/appointments', {
+      const res = await axios.get('http://localhost:5000/api/appointments', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAppointments(res.data);
@@ -195,7 +204,7 @@ const PatientDashboard = ({ token }) => {
 
   const fetchDoctors = async () => {
     try {
-      const res = await axios.get('https://doctor-appointment-oc3s.onrender.com/api/appointments/doctors', {
+      const res = await axios.get('http://localhost:5000/api/appointments/doctors', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDoctors(res.data);
@@ -214,7 +223,7 @@ const PatientDashboard = ({ token }) => {
     const dateString = selectedDate.toISOString().split('T')[0]; // Convert to YYYY-MM-DD format
 
     try {
-      await axios.post('https://doctor-appointment-oc3s.onrender.com/api/appointments/book', {
+      await axios.post('http://localhost:5000/api/appointments/book', {
         doctorId: selectedDoctor,
         date: dateString,
         time,

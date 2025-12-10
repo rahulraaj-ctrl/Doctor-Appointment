@@ -150,6 +150,8 @@ const AdminPanel = ({ token }) => {
   const [specialization, setSpecialization] = useState('');
   const [analytics, setAnalytics] = useState(null);
   const [activeTab, setActiveTab] = useState('doctors');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (token) {
@@ -160,7 +162,7 @@ const AdminPanel = ({ token }) => {
 
   const fetchDoctors = async () => {
     try {
-      const res = await axios.get('https://doctor-appointment-oc3s.onrender.com/api/admin/doctors', {
+      const res = await axios.get('http://localhost:5000/api/admin/doctors', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDoctors(res.data);
@@ -171,7 +173,7 @@ const AdminPanel = ({ token }) => {
 
   const fetchAnalytics = async () => {
     try {
-      const res = await axios.get('https://doctor-appointment-oc3s.onrender.com/api/admin/analytics', {
+      const res = await axios.get('http://localhost:5000/api/admin/analytics', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAnalytics(res.data);
@@ -183,7 +185,7 @@ const AdminPanel = ({ token }) => {
   const addDoctor = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('https://doctor-appointment-oc3s.onrender.com/api/admin/doctors', {
+      await axios.post('http://localhost:5000/api/admin/doctors', {
         name,
         email,
         password,
@@ -191,24 +193,63 @@ const AdminPanel = ({ token }) => {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      setSuccessMessage('Doctor added successfully');
+      setTimeout(() => setSuccessMessage(''), 3000);
       fetchDoctors();
       setName('');
       setEmail('');
       setPassword('');
       setSpecialization('');
     } catch (err) {
-      alert('Add doctor failed');
+      setErrorMessage(err.response?.data?.message || 'Add doctor failed');
+      setTimeout(() => setErrorMessage(''), 3000);
     }
   };
 
   const deleteDoctor = async (id) => {
     try {
-      await axios.delete(`https://doctor-appointment-oc3s.onrender.com/api/admin/doctors/${id}`, {
+      await axios.delete(`http://localhost:5000/api/admin/doctors/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      setSuccessMessage('Doctor deleted successfully');
+      setTimeout(() => setSuccessMessage(''), 3000);
       fetchDoctors();
     } catch (err) {
-      alert('Delete failed');
+      console.error('Delete error:', err);
+      console.error('Error response:', err.response);
+      const errorMsg = err.response?.data?.message || err.message || 'Delete failed';
+      setErrorMessage(errorMsg);
+      setTimeout(() => setErrorMessage(''), 3000);
+    }
+  };
+
+  const approveDoctor = async (id) => {
+    try {
+      await axios.put(`http://localhost:5000/api/admin/doctors/${id}/approve`, 
+        { isApproved: true },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSuccessMessage('Doctor approved successfully');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      fetchDoctors();
+    } catch (err) {
+      setErrorMessage(err.response?.data?.message || 'Approve failed');
+      setTimeout(() => setErrorMessage(''), 3000);
+    }
+  };
+
+  const rejectDoctor = async (id) => {
+    try {
+      await axios.put(`http://localhost:5000/api/admin/doctors/${id}/approve`, 
+        { isApproved: false },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSuccessMessage('Doctor rejected');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      fetchDoctors();
+    } catch (err) {
+      setErrorMessage(err.response?.data?.message || 'Reject failed');
+      setTimeout(() => setErrorMessage(''), 3000);
     }
   };
 
@@ -216,6 +257,28 @@ const AdminPanel = ({ token }) => {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 p-6">
       <div className="container mx-auto max-w-6xl">
         <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">Admin Panel</h1>
+
+        {successMessage && (
+          <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-400 rounded-lg">
+            <div className="flex items-center">
+              <svg className="w-6 h-6 text-green-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <p className="text-green-700 font-semibold">{successMessage}</p>
+            </div>
+          </div>
+        )}
+
+        {errorMessage && (
+          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-400 rounded-lg">
+            <div className="flex items-center">
+              <svg className="w-6 h-6 text-red-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <p className="text-red-700 font-semibold">{errorMessage}</p>
+            </div>
+          </div>
+        )}
 
         {/* Tab Navigation */}
         <div className="flex justify-center mb-8">
@@ -321,15 +384,53 @@ const AdminPanel = ({ token }) => {
                 ) : (
                   doctors.map(doctor => (
                     <div key={doctor._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-200">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
                           <h3 className="font-semibold text-gray-800">{doctor.name}</h3>
                           <p className="text-sm text-gray-600">{doctor.email}</p>
                           <p className="text-sm text-gray-600"><strong>Specialization:</strong> {doctor.specialization}</p>
+                          <div className="mt-2">
+                            {doctor.isApproved ? (
+                              <span className="inline-block px-3 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+                                ✓ Approved
+                              </span>
+                            ) : (
+                              <span className="inline-block px-3 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800 rounded-full">
+                                ⏳ Pending Approval
+                              </span>
+                            )}
+                          </div>
                         </div>
+                      </div>
+                      <div className="flex gap-2">
+                        {doctor.isApproved ? (
+                          <>
+                            <button
+                              onClick={() => rejectDoctor(doctor._id)}
+                              className="flex-1 bg-gradient-to-r from-orange-600 to-red-600 text-white px-3 py-2 rounded-lg hover:from-orange-700 hover:to-red-700 transition duration-200 font-semibold text-sm shadow-md"
+                            >
+                              Revoke
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => approveDoctor(doctor._id)}
+                              className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-2 rounded-lg hover:from-green-700 hover:to-emerald-700 transition duration-200 font-semibold text-sm shadow-md"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => rejectDoctor(doctor._id)}
+                              className="flex-1 bg-gradient-to-r from-orange-600 to-red-600 text-white px-3 py-2 rounded-lg hover:from-orange-700 hover:to-red-700 transition duration-200 font-semibold text-sm shadow-md"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
                         <button
                           onClick={() => deleteDoctor(doctor._id)}
-                          className="bg-gradient-to-r from-red-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-red-700 hover:to-pink-700 transition duration-200 font-semibold shadow-md"
+                          className="flex-1 bg-gradient-to-r from-red-600 to-pink-600 text-white px-3 py-2 rounded-lg hover:from-red-700 hover:to-pink-700 transition duration-200 font-semibold text-sm shadow-md"
                         >
                           Delete
                         </button>
