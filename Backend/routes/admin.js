@@ -54,8 +54,8 @@ router.put('/doctors/:id/approve', auth, async (req, res) => {
   }
 });
 
-// Get dashboard analytics
-router.get('/analytics', auth, async (req, res) => {
+// Delete a doctor
+router.delete('/doctors/:id', auth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ message: 'Access denied' });
 
   try {
@@ -69,7 +69,7 @@ router.get('/analytics', auth, async (req, res) => {
     }
     
     // Delete all appointments for this doctor
-    await Appointment.deleteMany({ doctor: req.params.id });
+    await Appointment.deleteMany({ doctorId: req.params.id });
     
     // Delete the doctor
     await doctor.deleteOne();
