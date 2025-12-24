@@ -57,7 +57,7 @@ router.post('/login', [
       return res.status(500).json({ message: 'Server configuration error: JWT_SECRET not set' });
     }
 
-    console.log('Login attempt for email:', email);
+    // console.log('Login attempt for email:', email);
     const user = await User.findOne({ email });
     if (!user) {
       console.log('User not found:', email);
