@@ -18,6 +18,11 @@ router.post('/register', [
 
   const { name, email, password, role, specialization } = req.body;
   try {
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET not configured');
+      return res.status(500).json({ message: 'Server configuration error: JWT_SECRET not set' });
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
@@ -29,7 +34,8 @@ router.post('/register', [
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET);
     res.json({ token, user: { id: user._id, name, email, role, isApproved } });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('Register error:', err.message || err);
+    res.status(500).json({ message: err.message || 'Registration failed' });
   }
 });
 
@@ -46,7 +52,12 @@ router.post('/login', [
 
   const { email, password } = req.body;
   try {
-    // console.log('Login attempt for email:', email);
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET not configured');
+      return res.status(500).json({ message: 'Server configuration error: JWT_SECRET not set' });
+    }
+
+    console.log('Login attempt for email:', email);
     const user = await User.findOne({ email });
     if (!user) {
       console.log('User not found:', email);
@@ -62,8 +73,8 @@ router.post('/login', [
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET);
     res.json({ token, user: { id: user._id, name: user.name, email, role: user.role } });
   } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ message: err.message });
+    console.error('Login error:', err.message || err);
+    res.status(500).json({ message: err.message || 'Login failed' });
   }
 });
 
