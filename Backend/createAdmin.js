@@ -18,7 +18,7 @@ async function createAdmin() {
     const hashedPassword = await bcrypt.hash('admin123', 10);
     const admin = new User({
       name: 'Admin User',
-      email: 'rajsingh958070@gmail.com',
+      email: 'admin321@gmail.com',
       password: hashedPassword,
       role: 'admin'
     });
